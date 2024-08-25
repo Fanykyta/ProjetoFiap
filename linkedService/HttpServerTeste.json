@@ -1,0 +1,12 @@
+{
+	"name": "HttpServerTeste",
+	"properties": {
+		"annotations": [],
+		"type": "HttpServer",
+		"typeProperties": {
+			"url": "vitorrubio.com.br/TTNM",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
