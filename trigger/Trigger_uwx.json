@@ -1,0 +1,24 @@
+{
+	"name": "Trigger_uwx",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "CopyFTP",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Hour",
+				"interval": 24,
+				"startTime": "2024-08-25T19:49:00Z",
+				"timeZone": "UTC"
+			}
+		}
+	}
+}
