@@ -84,7 +84,54 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Trigger_uwx')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 24,
+						"startTime": "2024-08-25T19:49:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DestinationDataset_uwx')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "input"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DestinationDataset_wmy')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -160,13 +207,61 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/CopyFTP')]",
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_wmy')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "FtpServer1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "FtpServerLocation",
+						"folderPath": "TTNM"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "F",
+						"type": "String"
+					},
+					{
+						"name": "A",
+						"type": "String"
+					},
+					{
+						"name": "B",
+						"type": "String"
+					},
+					{
+						"name": "C",
+						"type": "String"
+					},
+					{
+						"name": "D",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/FtpServer1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CopyPipeline_wmy')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Copy_uwx",
+						"name": "Copy_wmy",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -191,7 +286,8 @@
 								"type": "DelimitedTextSource",
 								"storeSettings": {
 									"type": "FtpReadSettings",
-									"fileListPath": "TTNM",
+									"recursive": true,
+									"wildcardFileName": "*",
 									"enablePartitionDiscovery": false,
 									"useBinaryTransfer": true,
 									"disableChunking": false
@@ -209,7 +305,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ""
+									"fileExtension": ".txt"
 								}
 							},
 							"enableStaging": false,
@@ -224,14 +320,14 @@
 						},
 						"inputs": [
 							{
-								"referenceName": "SourceDataset_uwx",
+								"referenceName": "SourceDataset_wmy",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
 						],
 						"outputs": [
 							{
-								"referenceName": "DestinationDataset_uwx",
+								"referenceName": "DestinationDataset_wmy",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
@@ -244,12 +340,12 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SourceDataset_uwx')]",
-				"[concat(variables('factoryId'), '/datasets/DestinationDataset_uwx')]"
+				"[concat(variables('factoryId'), '/datasets/SourceDataset_wmy')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationDataset_wmy')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Trigger_uwx')]",
+			"name": "[concat(parameters('factoryName'), '/Trigger_wmy')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -258,7 +354,7 @@
 				"pipelines": [
 					{
 						"pipelineReference": {
-							"referenceName": "CopyFTP",
+							"referenceName": "CopyPipeline_wmy",
 							"type": "PipelineReference"
 						},
 						"parameters": {}
@@ -269,13 +365,13 @@
 					"recurrence": {
 						"frequency": "Hour",
 						"interval": 24,
-						"startTime": "2024-08-25T19:49:00Z",
+						"startTime": "2024-08-25T20:05:00Z",
 						"timeZone": "UTC"
 					}
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/CopyFTP')]"
+				"[concat(variables('factoryId'), '/pipelines/CopyPipeline_wmy')]"
 			]
 		}
 	]
