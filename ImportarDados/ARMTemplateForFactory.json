@@ -60,8 +60,7 @@
 								"type": "DelimitedTextSource",
 								"storeSettings": {
 									"type": "FtpReadSettings",
-									"recursive": true,
-									"wildcardFileName": "*",
+									"fileListPath": "TTNM",
 									"enablePartitionDiscovery": false,
 									"useBinaryTransfer": true,
 									"disableChunking": false
@@ -79,7 +78,7 @@
 								"formatSettings": {
 									"type": "DelimitedTextWriteSettings",
 									"quoteAllText": true,
-									"fileExtension": ".txt"
+									"fileExtension": ""
 								}
 							},
 							"enableStaging": false,
