@@ -1,0 +1,9 @@
+{
+	"name": "ImportarDados",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f3099e2a-d05b-4208-a264-96b46f827768",
+		"tenantId": "11dbbfe2-89b8-4549-be10-cec364e59551"
+	}
+}
