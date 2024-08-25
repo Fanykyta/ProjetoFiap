@@ -11,13 +11,17 @@
 			"type": "secureString",
 			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'AzureBlobStorage'"
 		},
-		"AzureBlobStorage1_connectionString": {
+		"FtpServer1_password": {
 			"type": "secureString",
-			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'AzureBlobStorage1'"
+			"metadata": "Cadeia de caracteres segura para 'password' de 'FtpServer1'"
 		},
-		"RestService1_properties_typeProperties_url": {
+		"FtpServer1_properties_typeProperties_host": {
 			"type": "string",
-			"defaultValue": "https://github.com/Fanykyta/ProjetoFiap"
+			"defaultValue": "ftp.vitorrubio.com.br"
+		},
+		"FtpServer1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "vitorrubio"
 		},
 		"containerUri": {
 			"type": "string",
@@ -49,11 +53,14 @@
 					"AzureBlobStorage_connectionString": {
 						"value": "[parameters('AzureBlobStorage_connectionString')]"
 					},
-					"AzureBlobStorage1_connectionString": {
-						"value": "[parameters('AzureBlobStorage1_connectionString')]"
+					"FtpServer1_password": {
+						"value": "[parameters('FtpServer1_password')]"
 					},
-					"RestService1_properties_typeProperties_url": {
-						"value": "[parameters('RestService1_properties_typeProperties_url')]"
+					"FtpServer1_properties_typeProperties_host": {
+						"value": "[parameters('FtpServer1_properties_typeProperties_host')]"
+					},
+					"FtpServer1_properties_typeProperties_userName": {
+						"value": "[parameters('FtpServer1_properties_typeProperties_userName')]"
 					}
 				}
 			},

@@ -11,13 +11,17 @@
 			"type": "secureString",
 			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'AzureBlobStorage'"
 		},
-		"AzureBlobStorage1_connectionString": {
+		"FtpServer1_password": {
 			"type": "secureString",
-			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'AzureBlobStorage1'"
+			"metadata": "Cadeia de caracteres segura para 'password' de 'FtpServer1'"
 		},
-		"RestService1_properties_typeProperties_url": {
+		"FtpServer1_properties_typeProperties_host": {
 			"type": "string",
-			"defaultValue": "https://github.com/Fanykyta/ProjetoFiap"
+			"defaultValue": "ftp.vitorrubio.com.br"
+		},
+		"FtpServer1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "vitorrubio"
 		}
 	},
 	"variables": {
@@ -38,35 +42,49 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"name": "[concat(parameters('factoryName'), '/FtpServer1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"type": "AzureBlobStorage",
+				"type": "FtpServer",
 				"typeProperties": {
-					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+					"host": "[parameters('FtpServer1_properties_typeProperties_host')]",
+					"port": 21,
+					"enableSsl": true,
+					"enableServerCertificateValidation": false,
+					"authenticationType": "Basic",
+					"userName": "[parameters('FtpServer1_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('FtpServer1_password')]"
+					}
 				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/RestService1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/Trigger_puo')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"type": "RestService",
+				"runtimeState": "Stopped",
+				"pipelines": [],
+				"type": "ScheduleTrigger",
 				"typeProperties": {
-					"url": "[parameters('RestService1_properties_typeProperties_url')]",
-					"enableServerCertificateValidation": true,
-					"authenticationType": "Anonymous"
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 24,
+						"startTime": "2024-08-25T19:42:00Z",
+						"timeZone": "UTC"
+					}
 				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DestinationDataset_puo')]",
+			"name": "[concat(parameters('factoryName'), '/DestinationDataset_uwx')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -82,7 +100,6 @@
 						"container": "input"
 					},
 					"columnDelimiter": ",",
-					"compressionCodec": "ZipDeflate",
 					"escapeChar": "\\",
 					"firstRowAsHeader": true,
 					"quoteChar": "\""
@@ -94,31 +111,62 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/SourceDataset_puo')]",
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_uwx')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "RestService1",
+					"referenceName": "FtpServer1",
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {},
-				"schema": []
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "FtpServerLocation",
+						"folderPath": "TTNM"
+					},
+					"columnDelimiter": ",",
+					"rowDelimiter": "\n",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Prop_0",
+						"type": "String"
+					},
+					{
+						"name": "A",
+						"type": "String"
+					},
+					{
+						"name": "B",
+						"type": "String"
+					},
+					{
+						"name": "C",
+						"type": "String"
+					},
+					{
+						"name": "D",
+						"type": "String"
+					}
+				]
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/RestService1')]"
+				"[concat(variables('factoryId'), '/linkedServices/FtpServer1')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/CopyPipeline_puo')]",
+			"name": "[concat(parameters('factoryName'), '/CopyFTP')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Copy_puo",
+						"name": "Copy_uwx",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -130,16 +178,29 @@
 						},
 						"userProperties": [
 							{
+								"name": "Source",
+								"value": "TTNM/"
+							},
+							{
 								"name": "Destination",
 								"value": "input//"
 							}
 						],
 						"typeProperties": {
 							"source": {
-								"type": "RestSource",
-								"httpRequestTimeout": "00:01:40",
-								"requestInterval": "00.00:00:00.010",
-								"requestMethod": "GET"
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "FtpReadSettings",
+									"recursive": true,
+									"wildcardFileName": "*",
+									"enablePartitionDiscovery": false,
+									"useBinaryTransfer": true,
+									"disableChunking": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings",
+									"skipLineCount": 0
+								}
 							},
 							"sink": {
 								"type": "DelimitedTextSink",
@@ -153,319 +214,25 @@
 								}
 							},
 							"enableStaging": false,
-							"validateDataConsistency": false,
 							"translator": {
 								"type": "TabularTranslator",
-								"mappings": [
-									{
-										"source": {
-											"path": "$['payload']['allShortcutsEnabled']"
-										},
-										"sink": {
-											"name": "allShortcutsEnabled"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['path']"
-										},
-										"sink": {
-											"name": "payload_path"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['id']"
-										},
-										"sink": {
-											"name": "id"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['defaultBranch']"
-										},
-										"sink": {
-											"name": "defaultBranch"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['name']"
-										},
-										"sink": {
-											"name": "payload_repo_name"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['ownerLogin']"
-										},
-										"sink": {
-											"name": "ownerLogin"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['currentUserCanPush']"
-										},
-										"sink": {
-											"name": "currentUserCanPush"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['isFork']"
-										},
-										"sink": {
-											"name": "isFork"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['isEmpty']"
-										},
-										"sink": {
-											"name": "isEmpty"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['createdAt']"
-										},
-										"sink": {
-											"name": "createdAt"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['ownerAvatar']"
-										},
-										"sink": {
-											"name": "ownerAvatar"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['public']"
-										},
-										"sink": {
-											"name": "public"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['private']"
-										},
-										"sink": {
-											"name": "private"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['repo']['isOrgOwned']"
-										},
-										"sink": {
-											"name": "isOrgOwned"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['currentUser']"
-										},
-										"sink": {
-											"name": "currentUser"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['refInfo']['name']"
-										},
-										"sink": {
-											"name": "payload_refInfo_name"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['refInfo']['listCacheKey']"
-										},
-										"sink": {
-											"name": "listCacheKey"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['refInfo']['canEdit']"
-										},
-										"sink": {
-											"name": "canEdit"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['refInfo']['refType']"
-										},
-										"sink": {
-											"name": "refType"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['refInfo']['currentOid']"
-										},
-										"sink": {
-											"name": "currentOid"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['tree']['items'][0]['name']"
-										},
-										"sink": {
-											"name": "payload_tree_items'][0]['name"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['tree']['items'][0]['path']"
-										},
-										"sink": {
-											"name": "payload_tree_items'][0]['path"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['tree']['items'][0]['contentType']"
-										},
-										"sink": {
-											"name": "payload_tree_items'][0]['contentType"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['tree']['templateDirectorySuggestionUrl']"
-										},
-										"sink": {
-											"name": "templateDirectorySuggestionUrl"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['tree']['readme']"
-										},
-										"sink": {
-											"name": "readme"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['tree']['totalCount']"
-										},
-										"sink": {
-											"name": "payload_tree_totalCount"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['tree']['showBranchInfobar']"
-										},
-										"sink": {
-											"name": "showBranchInfobar"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['fileTree']['']['items'][0]['name']"
-										},
-										"sink": {
-											"name": "payload_fileTree__items'][0]['name"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['fileTree']['']['items'][0]['path']"
-										},
-										"sink": {
-											"name": "payload_fileTree__items'][0]['path"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['fileTree']['']['items'][0]['contentType']"
-										},
-										"sink": {
-											"name": "payload_fileTree__items'][0]['contentType"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['fileTree']['']['totalCount']"
-										},
-										"sink": {
-											"name": "payload_fileTree__totalCount"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['fileTreeProcessingTime']"
-										},
-										"sink": {
-											"name": "fileTreeProcessingTime"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['foldersToFetch'][0]"
-										},
-										"sink": {
-											"name": "items"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['treeExpanded']"
-										},
-										"sink": {
-											"name": "treeExpanded"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['symbolsExpanded']"
-										},
-										"sink": {
-											"name": "symbolsExpanded"
-										}
-									},
-									{
-										"source": {
-											"path": "$['payload']['csrf_tokens']['/Fanykyta/ProjetoFiap/branches']['post']"
-										},
-										"sink": {
-											"name": "post"
-										}
-									},
-									{
-										"source": {
-											"path": "$['title']"
-										},
-										"sink": {
-											"name": "title"
-										}
-									}
-								]
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
 							}
 						},
 						"inputs": [
 							{
-								"referenceName": "SourceDataset_puo",
+								"referenceName": "SourceDataset_uwx",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
 						],
 						"outputs": [
 							{
-								"referenceName": "DestinationDataset_puo",
+								"referenceName": "DestinationDataset_uwx",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
@@ -478,12 +245,12 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SourceDataset_puo')]",
-				"[concat(variables('factoryId'), '/datasets/DestinationDataset_puo')]"
+				"[concat(variables('factoryId'), '/datasets/SourceDataset_uwx')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationDataset_uwx')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Trigger_puo')]",
+			"name": "[concat(parameters('factoryName'), '/Trigger_uwx')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -492,7 +259,7 @@
 				"pipelines": [
 					{
 						"pipelineReference": {
-							"referenceName": "CopyPipeline_puo",
+							"referenceName": "CopyFTP",
 							"type": "PipelineReference"
 						},
 						"parameters": {}
@@ -503,13 +270,13 @@
 					"recurrence": {
 						"frequency": "Hour",
 						"interval": 24,
-						"startTime": "2024-08-25T19:42:00Z",
+						"startTime": "2024-08-25T19:49:00Z",
 						"timeZone": "UTC"
 					}
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/CopyPipeline_puo')]"
+				"[concat(variables('factoryId'), '/pipelines/CopyFTP')]"
 			]
 		}
 	]

@@ -8,11 +8,14 @@
 		"AzureBlobStorage_connectionString": {
 			"value": ""
 		},
-		"AzureBlobStorage1_connectionString": {
+		"FtpServer1_password": {
 			"value": ""
 		},
-		"RestService1_properties_typeProperties_url": {
-			"value": "https://github.com/Fanykyta/ProjetoFiap"
+		"FtpServer1_properties_typeProperties_host": {
+			"value": "ftp.vitorrubio.com.br"
+		},
+		"FtpServer1_properties_typeProperties_userName": {
+			"value": "vitorrubio"
 		},
 		"containerUri": {
 			"value": ""
