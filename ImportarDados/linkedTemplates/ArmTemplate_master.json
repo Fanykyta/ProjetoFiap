@@ -15,13 +15,9 @@
 			"type": "secureString",
 			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'AzureBlobStorage1'"
 		},
-		"HttpServer1_properties_typeProperties_url": {
+		"RestService1_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://drive.google.com/drive/folders/1cu9z6Jv1lZEaAevLTctfMtSYwTW2FZrt?usp=drive_link"
-		},
-		"HttpServerTeste_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://vitorrubio.com.br/TTNM"
+			"defaultValue": "https://github.com/Fanykyta/ProjetoFiap"
 		},
 		"containerUri": {
 			"type": "string",
@@ -56,11 +52,8 @@
 					"AzureBlobStorage1_connectionString": {
 						"value": "[parameters('AzureBlobStorage1_connectionString')]"
 					},
-					"HttpServer1_properties_typeProperties_url": {
-						"value": "[parameters('HttpServer1_properties_typeProperties_url')]"
-					},
-					"HttpServerTeste_properties_typeProperties_url": {
-						"value": "[parameters('HttpServerTeste_properties_typeProperties_url')]"
+					"RestService1_properties_typeProperties_url": {
+						"value": "[parameters('RestService1_properties_typeProperties_url')]"
 					}
 				}
 			},

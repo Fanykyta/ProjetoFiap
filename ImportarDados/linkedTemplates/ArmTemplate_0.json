@@ -15,13 +15,9 @@
 			"type": "secureString",
 			"metadata": "Cadeia de caracteres segura para 'connectionString' de 'AzureBlobStorage1'"
 		},
-		"HttpServer1_properties_typeProperties_url": {
+		"RestService1_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://drive.google.com/drive/folders/1cu9z6Jv1lZEaAevLTctfMtSYwTW2FZrt?usp=drive_link"
-		},
-		"HttpServerTeste_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://vitorrubio.com.br/TTNM"
+			"defaultValue": "https://github.com/Fanykyta/ProjetoFiap"
 		}
 	},
 	"variables": {
@@ -55,14 +51,14 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/HttpServer1')]",
+			"name": "[concat(parameters('factoryName'), '/RestService1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"type": "HttpServer",
+				"type": "RestService",
 				"typeProperties": {
-					"url": "[parameters('HttpServer1_properties_typeProperties_url')]",
+					"url": "[parameters('RestService1_properties_typeProperties_url')]",
 					"enableServerCertificateValidation": true,
 					"authenticationType": "Anonymous"
 				}
@@ -70,22 +66,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/HttpServerTeste')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "HttpServer",
-				"typeProperties": {
-					"url": "[parameters('HttpServerTeste_properties_typeProperties_url')]",
-					"enableServerCertificateValidation": true,
-					"authenticationType": "Anonymous"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DestinationDataset_8vd')]",
+			"name": "[concat(parameters('factoryName'), '/DestinationDataset_puo')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -94,97 +75,50 @@
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
-				"type": "Binary",
+				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobStorageLocation",
-						"folderPath": "teste",
 						"container": "input"
-					}
-				}
+					},
+					"columnDelimiter": ",",
+					"compressionCodec": "ZipDeflate",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DestinationDataset_e2r')]",
+			"name": "[concat(parameters('factoryName'), '/SourceDataset_puo')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
+					"referenceName": "RestService1",
 					"type": "LinkedServiceReference"
 				},
 				"annotations": [],
-				"type": "Binary",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "input"
-					}
-				}
+				"type": "RestResource",
+				"typeProperties": {},
+				"schema": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+				"[concat(variables('factoryId'), '/linkedServices/RestService1')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/SourceDataset_8vd')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "HttpServerTeste",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Binary",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation"
-					},
-					"compression": {
-						"type": "ZipDeflate"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/HttpServerTeste')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SourceDataset_e2r')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "HttpServer1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "Binary",
-				"typeProperties": {
-					"location": {
-						"type": "HttpServerLocation"
-					},
-					"compression": {
-						"type": "ZipDeflate"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/HttpServer1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/CopyPipeline_e2r')]",
+			"name": "[concat(parameters('factoryName'), '/CopyPipeline_puo')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "Copy_e2r",
+						"name": "Copy_puo",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -202,36 +136,336 @@
 						],
 						"typeProperties": {
 							"source": {
-								"type": "BinarySource",
-								"storeSettings": {
-									"type": "HttpReadSettings",
-									"requestMethod": "GET"
-								},
-								"formatSettings": {
-									"type": "BinaryReadSettings",
-									"compressionProperties": {
-										"type": "ZipDeflateReadSettings"
-									}
-								}
+								"type": "RestSource",
+								"httpRequestTimeout": "00:01:40",
+								"requestInterval": "00.00:00:00.010",
+								"requestMethod": "GET"
 							},
 							"sink": {
-								"type": "BinarySink",
+								"type": "DelimitedTextSink",
 								"storeSettings": {
 									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
 								}
 							},
-							"enableStaging": false
+							"enableStaging": false,
+							"validateDataConsistency": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"path": "$['payload']['allShortcutsEnabled']"
+										},
+										"sink": {
+											"name": "allShortcutsEnabled"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['path']"
+										},
+										"sink": {
+											"name": "payload_path"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['id']"
+										},
+										"sink": {
+											"name": "id"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['defaultBranch']"
+										},
+										"sink": {
+											"name": "defaultBranch"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['name']"
+										},
+										"sink": {
+											"name": "payload_repo_name"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['ownerLogin']"
+										},
+										"sink": {
+											"name": "ownerLogin"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['currentUserCanPush']"
+										},
+										"sink": {
+											"name": "currentUserCanPush"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['isFork']"
+										},
+										"sink": {
+											"name": "isFork"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['isEmpty']"
+										},
+										"sink": {
+											"name": "isEmpty"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['createdAt']"
+										},
+										"sink": {
+											"name": "createdAt"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['ownerAvatar']"
+										},
+										"sink": {
+											"name": "ownerAvatar"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['public']"
+										},
+										"sink": {
+											"name": "public"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['private']"
+										},
+										"sink": {
+											"name": "private"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['repo']['isOrgOwned']"
+										},
+										"sink": {
+											"name": "isOrgOwned"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['currentUser']"
+										},
+										"sink": {
+											"name": "currentUser"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['refInfo']['name']"
+										},
+										"sink": {
+											"name": "payload_refInfo_name"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['refInfo']['listCacheKey']"
+										},
+										"sink": {
+											"name": "listCacheKey"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['refInfo']['canEdit']"
+										},
+										"sink": {
+											"name": "canEdit"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['refInfo']['refType']"
+										},
+										"sink": {
+											"name": "refType"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['refInfo']['currentOid']"
+										},
+										"sink": {
+											"name": "currentOid"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['tree']['items'][0]['name']"
+										},
+										"sink": {
+											"name": "payload_tree_items'][0]['name"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['tree']['items'][0]['path']"
+										},
+										"sink": {
+											"name": "payload_tree_items'][0]['path"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['tree']['items'][0]['contentType']"
+										},
+										"sink": {
+											"name": "payload_tree_items'][0]['contentType"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['tree']['templateDirectorySuggestionUrl']"
+										},
+										"sink": {
+											"name": "templateDirectorySuggestionUrl"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['tree']['readme']"
+										},
+										"sink": {
+											"name": "readme"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['tree']['totalCount']"
+										},
+										"sink": {
+											"name": "payload_tree_totalCount"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['tree']['showBranchInfobar']"
+										},
+										"sink": {
+											"name": "showBranchInfobar"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['fileTree']['']['items'][0]['name']"
+										},
+										"sink": {
+											"name": "payload_fileTree__items'][0]['name"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['fileTree']['']['items'][0]['path']"
+										},
+										"sink": {
+											"name": "payload_fileTree__items'][0]['path"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['fileTree']['']['items'][0]['contentType']"
+										},
+										"sink": {
+											"name": "payload_fileTree__items'][0]['contentType"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['fileTree']['']['totalCount']"
+										},
+										"sink": {
+											"name": "payload_fileTree__totalCount"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['fileTreeProcessingTime']"
+										},
+										"sink": {
+											"name": "fileTreeProcessingTime"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['foldersToFetch'][0]"
+										},
+										"sink": {
+											"name": "items"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['treeExpanded']"
+										},
+										"sink": {
+											"name": "treeExpanded"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['symbolsExpanded']"
+										},
+										"sink": {
+											"name": "symbolsExpanded"
+										}
+									},
+									{
+										"source": {
+											"path": "$['payload']['csrf_tokens']['/Fanykyta/ProjetoFiap/branches']['post']"
+										},
+										"sink": {
+											"name": "post"
+										}
+									},
+									{
+										"source": {
+											"path": "$['title']"
+										},
+										"sink": {
+											"name": "title"
+										}
+									}
+								]
+							}
 						},
 						"inputs": [
 							{
-								"referenceName": "SourceDataset_e2r",
+								"referenceName": "SourceDataset_puo",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
 						],
 						"outputs": [
 							{
-								"referenceName": "DestinationDataset_e2r",
+								"referenceName": "DestinationDataset_puo",
 								"type": "DatasetReference",
 								"parameters": {}
 							}
@@ -244,8 +478,38 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SourceDataset_e2r')]",
-				"[concat(variables('factoryId'), '/datasets/DestinationDataset_e2r')]"
+				"[concat(variables('factoryId'), '/datasets/SourceDataset_puo')]",
+				"[concat(variables('factoryId'), '/datasets/DestinationDataset_puo')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Trigger_puo')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "CopyPipeline_puo",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Hour",
+						"interval": 24,
+						"startTime": "2024-08-25T19:42:00Z",
+						"timeZone": "UTC"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/CopyPipeline_puo')]"
 			]
 		}
 	]
